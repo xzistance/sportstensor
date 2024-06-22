@@ -36,7 +36,7 @@ class Sport(IntEnum):
     UNKNOWN_7 = 7
 
 class League(StrictBaseModel):
-    """Represents a sports league, mainly used for mapping and indicating active status to run predictiosn on."""
+    """Represents a sports league, mainly used for mapping and indicating active status to run predictions on."""
 
     leagueId: PositiveInt = Field(
         description="Unique ID that represents a league."
@@ -54,10 +54,11 @@ class Match(StrictBaseModel):
         description="Unique ID that represents a match."
     )
 
-    # The datetime of the starting time of the match. Should be in UTC?
+    # The datetime of the starting time of the match. Should be in UTC
     matchDate: dt.datetime
 
     sport: Sport
+    league: League
     
     # Set variable to keep track if the match has completed. Default to False.
     isComplete: bool = False
@@ -68,7 +69,7 @@ class Match(StrictBaseModel):
     awayTeamScore: Optional[int]
 
     # Validators to ensure immutability
-    @validator('matchId', 'matchDate', 'sport', 'homeTeamName', 'awayTeamName', pre=True, always=True, check_fields=False)
+    @validator('matchId', 'matchDate', 'sport', 'league', 'homeTeamName', 'awayTeamName', pre=True, always=True, check_fields=False)
     def match_fields_are_immutable(cls, v, values, field):
         if field.name in values and v != values[field.name]:
             raise ValueError(f"{field.name} is immutable and cannot be changed")
@@ -99,13 +100,14 @@ class Prediction(StrictBaseModel):
     )
 
     sport: Sport
+    league: League
     
     # Set variable to keep track if the prediction has been scored. Default to False.
     isScored: bool = False
     scoredDate: Optional[dt.datetime]
     
     # Validators to ensure immutability
-    @validator('predictionId', 'matchId', 'matchDate', 'sport', pre=True, always=True, check_fields=False)
+    @validator('predictionId', 'matchId', 'matchDate', 'sport', 'league', pre=True, always=True, check_fields=False)
     def base_fields_are_immutable(cls, v, values, field):
         if field.name in values and v != values[field.name]:
             raise ValueError(f"{field.name} is immutable and cannot be changed")

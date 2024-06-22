@@ -31,7 +31,7 @@ storage = SqliteValidatorStorage()
 async def sync_match_data(match_data_endpoint) -> bool:
     try:
         async with ClientSession() as session:
-            # TODO: add in authentication
+            # TODO: add in authentication?
             async with session.get(match_data_endpoint) as response:
                 response.raise_for_status()
                 match_data = await response.json()
