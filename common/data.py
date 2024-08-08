@@ -166,6 +166,21 @@ class Prediction(StrictBaseModel):
         )
 
 
+class PlayerPrediction(StrictBaseModel):
+    """Represents a prediction of an individual player's performance."""
+    playerName: str
+    statsType: str  # e.g. "home runs", "strikeouts", "shots on goal"
+    statsValue: int
+
+    def __str__(self):
+        base_str = super().__str__()
+        # TODO: return in commentary style using llms like gpt, llama-3 etc
+        # or leave this task to the prediction api users??
+        return (
+            f"playerName={self.playerName}, "
+            f"statsType={self.statsType}, statsValue={self.statsValue})"
+        )
+
 class MatchPrediction(Prediction):
     """Represents a prediction of a sports match."""
 
@@ -173,6 +188,7 @@ class MatchPrediction(Prediction):
     awayTeamName: str
     homeTeamScore: Optional[int]
     awayTeamScore: Optional[int]
+    stats: Optional[List[PlayerPrediction]]
 
     # Validators to ensure immutability
     @validator(
