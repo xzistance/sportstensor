@@ -68,6 +68,24 @@ def get_league_from_string(league_str: str) -> Optional[League]:
     return None
 
 
+class StatType(Enum):
+    """Represents individual player's stat info."""
+
+    HR = "Home Run"
+    SHOTS = "Shots to Goal"
+    # TODO: add more stats that will be used for prediction by interest
+
+
+class stat(StrictBaseModel):
+    statType: str
+    statValue: int
+
+
+class playerStat(StrictBaseModel):
+    playerName: str
+    stats: List[stat]
+
+
 class Match(StrictBaseModel):
     """Represents a match/game, sport agnostic."""
 
@@ -86,6 +104,7 @@ class Match(StrictBaseModel):
     awayTeamName: str
     homeTeamScore: Optional[int]
     awayTeamScore: Optional[int]
+    playerStats: List[playerStat]
 
     # Validators to ensure immutability
     @validator(
@@ -173,6 +192,7 @@ class MatchPrediction(Prediction):
     awayTeamName: str
     homeTeamScore: Optional[int]
     awayTeamScore: Optional[int]
+    playerStats: Optional[List[playerStat]]
 
     # Validators to ensure immutability
     @validator(

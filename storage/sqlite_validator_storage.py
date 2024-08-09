@@ -65,6 +65,20 @@ class SqliteValidatorStorage(ValidatorStorage):
                             scoredDate    TIMESTAMP(6)    NULL,
                             lastUpdated   TIMESTAMP(6)    NOT NULL
                             )"""
+    
+    PLAYERPREDICTIONS_TABLE_CREATE = """CREATE TABLE IF NOT EXISTS PlayerPredictions (
+                            Id              INTEGER         PRIMARY KEY,
+                            predictionId    INTEGER         NOT NULL,
+                            playerId        VARCHAR(50)     NOT NULL,
+                            playerName      VARCHAR(50)     NOT NULL,
+                            statType  VARCHAR(30)     NOT NULL,
+                            statValue INTEGER         NOT NULL,
+                            actualValue     INTEGER         NULL,
+                            isScored        INTEGER         DEFAULT 0,
+                            scoredDate      TIMESTAMP(6)    NULL,
+                            lastUpdated     TIMESTAMP(6)    NOT NULL,
+                            FOREIGN KEY(predictionId) REFERENCES MatchPredictions(predictionId)
+                            )"""
 
     def __init__(self):
         sqlite3.register_converter("timestamp", tz_aware_timestamp_adapter)
