@@ -43,6 +43,10 @@ app = FastAPI()
 api_key_header = APIKeyHeader(name="ST_API_KEY", auto_error=False)
 security = HTTPBasic()
 
+# Setup basic configuration for logging
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 async def get_api_key(api_key_header: str = Security(api_key_header)):
     if api_key_header is not None and api_key_header in API_KEYS:
@@ -156,12 +160,12 @@ async def main():
                     duration_hours = duration_seconds / 3600
                     ages.append(duration_hours)
 
-                # Update the miner registration statuses
-                db.update_miner_reg_statuses(active_uids, active_hotkeys)
+                # # Update the miner registration statuses
+                # db.update_miner_reg_statuses(active_uids, active_hotkeys)
 
                 # Combine the data into a list of tuples
-                data_to_update = list(zip(active_coldkeys, ages, active_hotkeys))
-                db.update_miner_coldkeys_and_ages(data_to_update)
+                data_to_update = list(zip(active_hotkeys, active_coldkeys, active_uids, ages))
+                db.insert_or_update_miner_coldkeys_and_ages(data_to_update)
 
             # In case of unforeseen errors, the api will log the error and continue operations.
             except Exception as err:
@@ -461,38 +465,10 @@ async def main():
     @app.get("/predictionResults")
     async def get_prediction_results(
         miner_hotkey: Optional[str] = None,
-        sport: Optional[str] = None,
         league: Optional[str] = None,
     ):
         try:
-            if league is not None:
-                results = db.get_prediction_stats_by_league(league, miner_hotkey)
-            elif sport is not None:
-                results = db.get_prediction_stats_by_sport(sport, miner_hotkey)
-            else:
-                results = db.get_prediction_stats_total(miner_hotkey)
-
-            if results:
-                return {"results": results}
-            else:
-                return {"results": []}
-        except Exception as e:
-            logging.error(f"Error retrieving predictionResults: {e}")
-            raise HTTPException(status_code=500, detail="Internal server error.")
-
-    @app.get("/predictionResultsPerMiner")
-    async def get_prediction_results_per_miner(
-        miner_hotkey: Optional[str] = None,
-        sport: Optional[str] = None,
-        league: Optional[str] = None,
-    ):
-        try:
-            if league is not None:
-                results = db.get_prediction_stats_by_league(league, miner_hotkey, True)
-            elif sport is not None:
-                results = db.get_prediction_stats_by_sport(sport, miner_hotkey, True)
-            else:
-                results = db.get_prediction_stats_total(miner_hotkey, True)
+            results = db.get_total_bets_by_league(league, miner_hotkey)
 
             if results:
                 return {"results": results}
@@ -501,7 +477,24 @@ async def main():
         except Exception as e:
             logging.error(f"Error retrieving predictionResultsPerMiner: {e}")
             raise HTTPException(status_code=500, detail="Internal server error.")
-        
+
+    @app.get("/predictionResultsPerMiner")
+    async def get_prediction_results_per_miner(
+        miner_hotkey: Optional[str] = None,
+        league: Optional[str] = None,
+        cutoff: Optional[int] = None
+    ):
+        try:
+            results = db.get_prediction_stats_by_league(league, miner_hotkey, cutoff)
+
+            if results:
+                return {"results": results}
+            else:
+                return {"results": []}
+        except Exception as e:
+            logging.error(f"Error retrieving predictionResults: {e}")
+            raise HTTPException(status_code=500, detail="Internal server error.")    
+    
     @app.get("/predictionResultsSnapshots")
     async def get_prediction_results_snapshots(
         miner_hotkey: Optional[str] = None,
